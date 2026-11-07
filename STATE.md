@@ -24,6 +24,12 @@
 - Grade produced files or the final message, never the trace, when the loaded skill text contains the same words the grader looks for.
 
 ## Last session
+### 2026-11-07 (promo film)
+- tried: media/promo — time-driven HTML stage rendered frame by frame over CDP (Node 22 WebSocket, no deps), synthesized score (audio.cjs), ffmpeg mux
+- passed: out/harness-builder.mp4 1920x1080 30 fps H.264 + AAC 48 kHz, 58.0 s, 129 MB, -16.7 LUFS; render ~3.5 min; boundary stills t=0/12.15/57.99 grain-only black
+- failed: first stills run — hidden scenes never requested the web fonts; fixed with explicit document.fonts.load
+- next: user reviews the film; push the repo before posting (end card shows github.com/mhmdsalameh/ai-native-harness); optional 1:1 cut for LinkedIn
+
 ### 2026-11-07
 - tried: research (20 articles, 21 cookbook entries, plugin-eval docs) -> intent/spec + plan -> plugin harness-builder (3 agents, 6 skills, hb CLI, eval-guard hook, 5-case self-proof suite)
 - passed: 33/33 `node --test scripts/test/*.test.cjs`; `claude plugin validate` plugin + marketplace; self-proof runs=1: eval-suite-for-skill Δ +1.00, audit-plugin Δ +0.20, place-controls 0.00, fix-skill-trigger 0.00 (control), unrelated-git-question 0.00 with no skill fired; suite mean Δ +0.24; eval spend $1.25 + probes ~$0.15

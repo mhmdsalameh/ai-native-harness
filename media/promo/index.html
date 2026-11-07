@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Harness Builder film</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=JetBrains+Mono:wght@400;600&display=block" rel="stylesheet">
+<script src="timeline.js"></script>
+<style>
+  :root {
+    --black: #000000;
+    --tungsten: #EDE3D1;
+    --steel: #5F7482;
+    --sodium: #FFA319;
+    --dim: #262B2F;
+    --rule: #3A4249;
+  }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--black); }
+  body { font-family: Archivo, sans-serif; color: var(--tungsten); font-kerning: normal; }
+  p, h1, h2 { margin: 0; font-weight: inherit; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .scene { position: absolute; inset: 0; display: none; transform-origin: 50% 50%; }
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .caption { position: absolute; left: 160px; bottom: 170px; font-size: 40px; font-weight: 400; font-stretch: 100%; line-height: 1.25; max-width: 1500px; }
+  .caption p { position: absolute; bottom: 0; left: 0; width: 1500px; text-wrap: balance; }
+  .bar { position: absolute; left: 0; right: 0; background: var(--black); z-index: 20; height: 138px; }
+  #barT { top: 0; } #barB { bottom: 0; }
+  #grain { position: absolute; inset: 0; width: 1920px; height: 1080px; z-index: 15; mix-blend-mode: screen; opacity: .05; pointer-events: none; }
+
+  /* chapter rail: where the run is in the pipeline */
+  #rail { position: absolute; top: 58px; left: 0; right: 0; z-index: 12; display: none; }
+  #rail .items { position: relative; display: flex; justify-content: center; gap: 72px; font-size: 24px; font-stretch: 112%; font-weight: 500; }
+  #rail .items span { color: var(--steel); }
+  #rail .under { position: absolute; top: 40px; height: 2px; background: var(--sodium); }
+
+  /* s1 */
+  #s1 .l { font-size: 68px; font-weight: 300; font-stretch: 112%; letter-spacing: .01em; }
+  #s1 .l2 { color: var(--steel); margin-top: 28px; }
+
+  /* s2 */
+  #field { position: absolute; inset: 0; perspective: 1000px; perspective-origin: 50% 50%; }
+  #field span { position: absolute; left: 50%; top: 50%; font-size: 30px; white-space: nowrap; will-change: transform, filter; }
+  #s2 .caption { font-size: 46px; }
+
+  /* s3 */
+  #title { font-size: 120px; font-weight: 800; font-stretch: 125%; white-space: nowrap; }
+  #s3 .rule { height: 2px; background: var(--sodium); margin: 44px 0 40px; }
+  #s3 .sub { font-size: 36px; font-weight: 300; font-stretch: 105%; line-height: 1.4; max-width: 1100px; }
+
+  /* s4 */
+  .stat { position: absolute; left: 160px; }
+  .stat .n { font-size: 168px; font-weight: 700; font-stretch: 100%; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 30px; color: var(--steel); margin-top: 8px; }
+  #pages { position: absolute; left: 980px; top: 210px; width: 780px; height: 600px; display: flex; gap: 40px; }
+  .page { position: relative; flex: 1; }
+  .page i { position: absolute; left: 0; height: 9px; background: var(--dim); }
+  #scan { position: absolute; left: 960px; width: 820px; height: 2px; background: var(--sodium); }
+
+  /* s5 */
+  #wires { position: absolute; inset: 0; }
+  .node { position: absolute; box-sizing: border-box; border: 1.5px solid var(--rule); display: flex; align-items: center; padding: 0 22px; font-size: 24px; white-space: nowrap; }
+  .node.core { border-color: var(--tungsten); font-size: 30px; justify-content: center; font-weight: 600; }
+  .node.hard { border-color: var(--sodium); color: var(--sodium); }
+  .grp { position: absolute; font-size: 22px; color: var(--steel); font-stretch: 105%; }
+
+  /* s6 */
+  .term { position: absolute; left: 160px; font-size: 30px; white-space: pre; }
+  .term .p { color: var(--steel); }
+  .cur { display: inline-block; width: .6em; height: 1.05em; background: var(--sodium); vertical-align: -0.18em; margin-left: 4px; }
+  .row { position: absolute; left: 160px; width: 1600px; height: 92px; }
+  .row .name { position: absolute; left: 0; top: 10px; font-size: 28px; }
+  .row .tag { position: absolute; left: 0; top: 50px; font-size: 22px; color: var(--steel); font-stretch: 105%; }
+  .row .b { position: absolute; left: 640px; height: 14px; }
+  .row .bw { top: 22px; background: var(--steel); }
+  .row .bp { top: 46px; background: var(--sodium); }
+  .row .d { position: absolute; right: 0; top: 14px; font-size: 46px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; transform-origin: 100% 50%; }
+  .legend { position: absolute; top: 262px; font-size: 20px; color: var(--steel); display: flex; align-items: center; gap: 12px; }
+  .legend i { display: inline-block; width: 28px; height: 10px; }
+  #mean { position: absolute; right: 160px; top: 790px; font-size: 26px; color: var(--tungsten); font-variant-numeric: tabular-nums; }
+  #foot { position: absolute; right: 160px; bottom: 108px; font-size: 26px; color: var(--steel); }
+
+  /* s7 */
+  #ring { position: absolute; inset: 0; }
+  .lab { position: absolute; font-size: 34px; font-stretch: 108%; white-space: nowrap; color: var(--steel); }
+
+  /* s8 */
+  .stage { position: absolute; top: 520px; transform: translateX(-50%); text-align: center; }
+  .stage .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--steel); margin: 0 auto 26px; box-sizing: border-box; }
+  .stage .t { font-size: 30px; color: var(--steel); white-space: nowrap; font-stretch: 105%; }
+  #track { position: absolute; top: 528px; height: 2px; background: var(--rule); }
+  #trackOn { position: absolute; top: 528px; height: 2px; background: var(--sodium); }
+
+  /* s9 */
+  #s9 .big { font-size: 96px; font-weight: 600; font-stretch: 112%; }
+  #endTitle { font-size: 84px; font-weight: 800; font-stretch: 125%; letter-spacing: .14em; white-space: nowrap; }
+  #s9 .os { font-size: 32px; color: var(--steel); margin-top: 22px; font-stretch: 105%; }
+  #s9 .inst { margin-top: 56px; font-size: 26px; line-height: 1.8; text-align: left; white-space: pre; }
+  #s9 .inst .p { color: var(--steel); }
+  #s9 .url { margin-top: 44px; font-size: 30px; color: var(--sodium); font-stretch: 105%; }
+</style>
+</head>
+<body>
+<canvas id="grain" width="480" height="270"></canvas>
+<div class="bar" id="barT"></div><div class="bar" id="barB"></div>
+
+<div id="rail"><div class="items"><span>Research</span><span>Build</span><span>Test</span><span>Optimize</span><span>Improve</span><div class="under"></div></div></div>
+
+<section class="scene" id="s1">
+  <div class="center">
+    <p class="l l1">Every agent runs on a harness.</p>
+    <p class="l l2">Most harnesses are built on guesswork.</p>
+  </div>
+</section>
+
+<section class="scene" id="s2">
+  <div id="field"></div>
+  <div class="caption"><p>Skills that never trigger.</p><p>Rules the model forgets.</p><p>Context nobody measured.</p></div>
+</section>
+
+<section class="scene" id="s3">
+  <div class="center">
+    <h1 id="title">HARNESS BUILDER</h1>
+    <div class="rule"></div>
+    <p class="sub">An open-source Claude Code plugin that researches, builds, tests and tunes the harness your agents run on.</p>
+  </div>
+</section>
+
+<section class="scene" id="s4">
+  <div class="stat" style="top:250px"><p class="n" id="n1">0</p><p class="k">articles from claude.com/resources</p></div>
+  <div class="stat" style="top:540px"><p class="n" id="n2">0</p><p class="k">entries from the Claude cookbook</p></div>
+  <div id="pages"><div class="page"></div><div class="page"></div><div class="page"></div></div>
+  <div id="scan"></div>
+  <div class="caption"><p>First it reads Anthropic's published guidance, in small chunks, to keep its context clean.</p></div>
+</section>
+
+<section class="scene" id="s5">
+  <svg id="wires" width="1920" height="1080"></svg>
+  <div class="grp" style="left:210px;top:236px">Subagents, each in a fresh context</div>
+  <div class="grp" style="left:210px;top:560px">Enforced in code, not in prompts</div>
+  <div class="grp" style="left:1330px;top:196px">Skills, loaded only when needed</div>
+  <div id="nodes"></div>
+  <div class="caption"><p>Hard rules become hooks. Know-how becomes skills the agent loads only when the task needs them.</p></div>
+</section>
+
+<section class="scene" id="s6">
+  <div class="term mono" style="top:150px"><span class="p">$ </span><span id="cmd6"></span><span class="cur" id="cur6"></span></div>
+  <div class="legend" style="left:800px"><i style="background:var(--steel)"></i>without plugin</div>
+  <div class="legend" style="left:1060px"><i style="background:var(--sodium)"></i>with plugin</div>
+  <div class="legend" style="right:160px">difference</div>
+  <div id="rows"></div>
+  <p id="mean" class="mono">mean Δ +0.24</p>
+  <p id="foot">Self-proof suite: 5 cases, 1 run per arm, $1.25 total.</p>
+  <div class="caption"><p>Every case runs twice: with the plugin and without it. Only the difference counts.</p><p>Control cases must not move. They stay at zero.</p></div>
+</section>
+
+<section class="scene" id="s7">
+  <svg id="ring" width="1920" height="1080"></svg>
+  <div class="lab" id="lN">Change one thing</div>
+  <div class="lab" id="lE">Run the evals</div>
+  <div class="lab" id="lS">Compare the difference</div>
+  <div class="lab" id="lW">Keep it or revert</div>
+  <div class="caption"><p>One change at a time, every run logged to a ledger. Nothing ships on a hunch.</p></div>
+</section>
+
+<section class="scene" id="s8">
+  <div class="term mono" style="top:150px"><span class="p">$ </span><span id="cmd8"></span><span class="cur" id="cur8"></span></div>
+  <div id="track"></div><div id="trackOn"></div>
+  <div id="stages"></div>
+  <div class="caption"><p>Already have a harness? Point it there. Audit, baseline, improve.</p></div>
+</section>
+
+<section class="scene" id="s9">
+  <div class="center" id="end1"><p class="big">Measure your harness.</p></div>
+  <div class="center" id="end2">
+    <h2 id="endTitle">HARNESS BUILDER</h2>
+    <p class="os">Open-source plugin for Claude Code</p>
+    <div class="inst mono"><span class="p">$ </span>claude plugin marketplace add <span id="mk"></span>
+<span class="p">$ </span>claude plugin install harness-builder@ai-native-harness</div>
+    <p class="url" id="url"></p>
+  </div>
+</section>
+
+<script>
+'use strict';
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let x = Math.imul(seed ^ (seed >>> 15), 1 | seed); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; };
+const C = { tungsten: '#EDE3D1', steel: '#5F7482', sodium: '#FFA319', dim: '#262B2F', rule: '#3A4249' };
+
+// One motion language for text: a rack focus (blur to sharp), in and out.
+function focus(el, p) { el.style.opacity = p; el.style.filter = p >= 1 ? 'none' : `blur(${((1 - p) * 16).toFixed(2)}px)`; }
+function win(t, a, b, fi = 0.8, fo = 0.6) { return Math.min(eo(seg(t, a, a + fi)), 1 - eio(seg(t, b - fo, b))); }
+function type(el, text, t, a, cps = 38) { el.textContent = text.slice(0, Math.floor(clamp((t - a) * cps, 0, text.length))); }
+function cursor(el, t, a, b) { el.style.opacity = t >= a && t < b && Math.floor(t * 2.2) % 2 === 0 ? 1 : 0; }
+
+// --- build static content -------------------------------------------------
+$('#mk').textContent = TL.marketplace;
+$('#url').textContent = TL.repo;
+
+const FILES = ['CLAUDE.md', 'SKILL.md', 'hooks.json', 'settings.json', 'plugin.json', 'agents/reviewer.md', 'rules/style.md',
+  'commands/deploy.md', '.mcp.json', 'skills/research/SKILL.md', 'guard.ps1', 'AGENTS.md', 'description:', 'allowed-tools',
+  'PreToolUse', 'system prompt', 'evals/', 'permissions.deny', 'SessionStart', 'memory/', 'subagent_type', 'context window',
+  'settings.local.json', 'skills/review/SKILL.md', 'Stop hook', 'max_turns', 'tool_use', 'rules/security.md'];
+const tokens = [];
+{
+  const r = rng(7);
+  for (let i = 0; i < 46; i++) {
+    const el = document.createElement('span');
+    el.className = 'mono';
+    el.textContent = FILES[i % FILES.length];
+    el.style.color = r() < 0.22 ? C.tungsten : C.steel;
+    $('#field').appendChild(el);
+    tokens.push({ el, x: (r() * 2 - 1) * 1150, y: (r() * 2 - 1) * 430, z0: -2900 + r() * 2700 });
+  }
+}
+
+const pageLines = [];
+{
+  const r = rng(21);
+  $$('.page').forEach((pg) => {
+    for (let i = 0; i < 30; i++) {
+      const el = document.createElement('i');
+      const y = i * 20;
+      el.style.top = y + 'px';
+      el.style.width = (i % 7 === 6 ? 0 : 35 + r() * 65) + '%';
+      pg.appendChild(el);
+      pageLines.push({ el, y: 210 + y, note: r() < 0.14 });
+    }
+  });
+}
+
+const NODES = [
+  { id: 'core', text: 'harness-orchestrator', x: 730, y: 422, w: 460, h: 96, cls: 'core mono' },
+  { text: 'harness', side: 'R', y: 250 }, { text: 'harness-research', side: 'R', y: 330 },
+  { text: 'harness-design', side: 'R', y: 410 }, { text: 'harness-audit', side: 'R', y: 490 },
+  { text: 'harness-eval', side: 'R', y: 570 }, { text: 'harness-optimize', side: 'R', y: 650 },
+  { text: 'harness-researcher', side: 'L', y: 290 }, { text: 'harness-reviewer', side: 'L', y: 370 },
+  { text: 'eval-guard hook', side: 'L', y: 614, hard: true }, { text: 'hb CLI', side: 'L', y: 694, hard: true },
+];
+const wires = [];
+NODES.forEach((n, i) => {
+  const el = document.createElement('div');
+  if (n.side) { n.w = 380; n.h = 56; n.x = n.side === 'R' ? 1330 : 210; n.cls = 'mono' + (n.hard ? ' hard' : ''); }
+  el.className = 'node ' + n.cls;
+  Object.assign(el.style, { left: n.x + 'px', top: n.y + 'px', width: n.w + 'px', height: n.h + 'px' });
+  el.textContent = n.text;
+  $('#nodes').appendChild(el);
+  n.el = el;
+  if (!n.side) return;
+  const ys = 470, yt = n.y + n.h / 2;
+  const [x0, x1] = n.side === 'R' ? [1190, 1330] : [730, 590];
+  const xm = (x0 + x1) / 2;
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', `M${x0},${ys} C${xm},${ys} ${xm},${yt} ${x1},${yt}`);
+  p.setAttribute('fill', 'none');
+  p.setAttribute('stroke', n.hard ? C.sodium : C.rule);
+  p.setAttribute('stroke-width', '1.5');
+  $('#wires').appendChild(p);
+  const len = p.getTotalLength();
+  p.style.strokeDasharray = len;
+  wires.push({ p, len, n, i });
+});
+
+const ROWS = [
+  { name: 'eval-suite-for-skill', tag: 'write an eval suite for a skill', w: 0, p: 1 },
+  { name: 'audit-plugin', tag: 'audit a plugin against the budgets', w: 0.8, p: 1 },
+  { name: 'place-controls', tag: 'put each rule in the right layer', w: 1, p: 1 },
+  { name: 'fix-skill-trigger', tag: 'control case', w: 1, p: 1 },
+  { name: 'unrelated-git-question', tag: 'control: the plugin must not fire', w: 1, p: 1 },
+];
+const BARW = 640;
+ROWS.forEach((r, i) => {
+  const el = document.createElement('div');
+  el.className = 'row';
+  el.style.top = 310 + i * 92 + 'px';
+  el.innerHTML = `<p class="name mono"></p><p class="tag"></p><i class="b bw"></i><i class="b bp"></i><p class="d"></p>`;
+  $('.name', el).textContent = r.name;
+  $('.tag', el).textContent = r.tag;
+  $('#rows').appendChild(el);
+  r.el = el;
+});
+
+const STAGES = ['Audit', 'Write evals', 'Wrap as plugin', 'Baseline', 'Optimize'];
+const STAGE_X = STAGES.map((_, i) => 360 + i * 300);
+STAGES.forEach((s, i) => {
+  const el = document.createElement('div');
+  el.className = 'stage';
+  el.style.left = STAGE_X[i] + 'px';
+  el.innerHTML = '<div class="dot"></div><p class="t"></p>';
+  $('.t', el).textContent = s;
+  $('#stages').appendChild(el);
+});
+Object.assign($('#track').style, { left: STAGE_X[0] + 'px', width: STAGE_X[4] - STAGE_X[0] + 'px' });
+
+const RING = { cx: 960, cy: 470, r: 220 };
+{
+  const s = $('#ring');
+  const mk = (tag, attrs) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); s.appendChild(e); return e; };
+  mk('circle', { cx: RING.cx, cy: RING.cy, r: RING.r, fill: 'none', stroke: C.rule, 'stroke-width': 2 });
+  window.ringArc = mk('path', { fill: 'none', stroke: C.sodium, 'stroke-width': 3, 'stroke-linecap': 'round' });
+  window.ringDot = mk('circle', { r: 9, fill: C.sodium });
+  const L = { lN: [RING.cx, RING.cy - RING.r - 70, 'c'], lE: [RING.cx + RING.r + 44, RING.cy, 'l'], lS: [RING.cx, RING.cy + RING.r + 70, 'c'], lW: [RING.cx - RING.r - 44, RING.cy, 'r'] };
+  for (const id in L) {
+    const [x, y, a] = L[id];
+    const el = $('#' + id);
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    el.style.transform = `translate(${a === 'c' ? '-50%' : a === 'r' ? '-100%' : '0'}, -50%)`;
+  }
+}
+
+// --- grain ------------------------------------------------------------------
+const g = $('#grain').getContext('2d');
+const gimg = g.createImageData(480, 270);
+function grain(frame) {
+  const r = rng(frame * 9973 + 1);
+  const d = gimg.data;
+  for (let i = 0; i < d.length; i += 4) { const v = (r() * 255) | 0; d[i] = d[i + 1] = d[i + 2] = v; d[i + 3] = 255; }
+  g.putImageData(gimg, 0, 0);
+}
+
+// --- per-frame render ---------------------------------------------------------
+function sceneOn(id, t) {
+  const [a, b] = TL.scenes[id];
+  const el = $('#' + id);
+  const on = t >= a && t < b;
+  el.style.display = on ? 'block' : 'none';
+  if (on) el.style.transform = `scale(${(1 + 0.035 * seg(t, a, b)).toFixed(5)})`;
+  return on;
+}
+
+const R = {
+  s1(t) {
+    focus($('#s1 .l1'), win(t, 0.6, 5.9, 1.2, 0.8));
+    focus($('#s1 .l2'), win(t, 2.6, 5.9, 1.2, 0.8));
+  },
+  s2(t) {
+    for (const k of tokens) {
+      const z = k.z0 + 330 * (t - 6);
+      const vis = z < 760;
+      k.el.style.display = vis ? 'block' : 'none';
+      if (!vis) continue;
+      k.el.style.transform = `translate(-50%,-50%) translate3d(${k.x}px,${k.y}px,${z}px)`;
+      k.el.style.opacity = (clamp((z + 2900) / 900) * clamp((760 - z) / 260) * win(t, 6, 12, 0.6, 0.5)).toFixed(3);
+      k.el.style.filter = `blur(${clamp(Math.abs(z + 150) / 110, 0, 12).toFixed(2)}px)`;
+    }
+    const lines = $$('#s2 .caption p');
+    [6.6, 8.0, 9.4].forEach((a, i) => {
+      focus(lines[i], win(t, a, 11.6, 0.7, 0.6));
+      lines[i].style.bottom = (2 - i) * 62 + 'px';
+      lines[i].style.color = i === 2 ? C.tungsten : C.steel;
+    });
+  },
+  s3(t) {
+    const p = eo(seg(t, 12.3, 17.2));
+    const title = $('#title');
+    title.style.letterSpacing = (0.9 - 0.76 * p).toFixed(4) + 'em';
+    title.style.marginRight = -(0.9 - 0.76 * p).toFixed(4) + 'em';
+    focus(title, win(t, 12.3, 18, 0.35, 0.6));
+    $('#s3 .rule').style.width = (260 * eio(seg(t, 13.4, 14.4))).toFixed(1) + 'px';
+    $('#s3 .rule').style.opacity = 1 - seg(t, 17.4, 18);
+    focus($('#s3 .sub'), win(t, 14.0, 18, 0.9, 0.6));
+  },
+  s4(t) {
+    const w = win(t, 18, 24, 0.6, 0.6);
+    $$('#s4 .stat').forEach((el, i) => focus(el, Math.min(w, win(t, 18.4 + i * 0.5, 24, 0.7, 0.6))));
+    $('#n1').textContent = Math.round(20 * eo(seg(t, 18.5, 20.7)));
+    $('#n2').textContent = Math.round(21 * eo(seg(t, 19.0, 21.2)));
+    const sy = 200 + 620 * eio(seg(t, 18.6, 23.0));
+    const sc = $('#scan');
+    sc.style.top = sy + 'px';
+    sc.style.opacity = w * (1 - seg(t, 23.0, 23.3));
+    $('#pages').style.opacity = w;
+    for (const l of pageLines) l.el.style.background = l.y < sy ? (l.note ? C.sodium : C.steel) : C.dim;
+    focus($('#s4 .caption p'), win(t, 19.6, 23.9, 0.8, 0.6));
+  },
+  s5(t) {
+    const w = win(t, 24, 31, 0.5, 0.6);
+    focus(NODES[0].el, Math.min(w, win(t, 24.2, 31, 0.6, 0.6)));
+    for (const k of wires) {
+      const a = 24.8 + (k.i - 1) * 0.14;
+      const p = eio(seg(t, a, a + 0.7));
+      k.p.style.strokeDashoffset = (k.len * (1 - p)).toFixed(1);
+      k.p.style.opacity = w;
+      focus(k.n.el, Math.min(w, eo(seg(t, a + 0.5, a + 1.1))));
+    }
+    $$('#s5 .grp').forEach((el, i) => focus(el, Math.min(w, win(t, 25.6 + i * 0.2, 31, 0.7, 0.6))));
+    focus($('#s5 .caption p'), win(t, 26.6, 30.9, 0.8, 0.6));
+  },
+  s6(t) {
+    const w = win(t, 31, 41, 0.4, 0.7);
+    const cmd = 'claude plugin eval plugins/harness-builder --max-cost-usd 5';
+    type($('#cmd6'), cmd, t, 31.3);
+    cursor($('#cur6'), t, 31.0, 41);
+    $('#s6 .term').style.opacity = w;
+    $$('#s6 .legend').forEach((el) => focus(el, Math.min(w, eo(seg(t, 33.0, 33.6)))));
+    ROWS.forEach((r, i) => {
+      const a = 33.1 + i * 0.12;
+      const pw = eio(seg(t, a, a + 1.0));
+      const pp = eio(seg(t, a + 0.25, a + 1.25));
+      const el = r.el;
+      focus($('.name', el), Math.min(w, eo(seg(t, a - 0.1, a + 0.4))));
+      focus($('.tag', el), Math.min(w, eo(seg(t, a, a + 0.5))));
+      const bw = $('.bw', el), bp = $('.bp', el);
+      bw.style.width = BARW * r.w * pw + 'px';
+      bp.style.width = BARW * r.p * pp + 'px';
+      bw.style.opacity = bp.style.opacity = w;
+      const delta = r.p - r.w;
+      const da = i === 0 ? 35.0 : 34.4 + i * 0.12;
+      const d = $('.d', el);
+      const dp = eo(seg(t, da, da + 0.5));
+      d.textContent = (delta > 0 ? '+' : '') + (delta * Math.min(1, dp * 1.4)).toFixed(2);
+      d.style.color = delta > 0 ? C.sodium : C.steel;
+      focus(d, Math.min(w, dp));
+      d.style.transform = `scale(${(1 + (i === 0 ? 0.35 : 0) * (1 - dp)).toFixed(4)})`;
+    });
+    focus($('#mean'), Math.min(w, eo(seg(t, 36.3, 37.0))));
+    focus($('#foot'), Math.min(w, eo(seg(t, 36.8, 37.5))));
+    const caps = $$('#s6 .caption p');
+    focus(caps[0], win(t, 33.4, 37.6, 0.8, 0.5));
+    focus(caps[1], win(t, 37.8, 40.9, 0.7, 0.6));
+  },
+  s7(t) {
+    const w = win(t, 41, 46, 0.5, 0.6);
+    const sweep = 1.25 * eio(seg(t, 41.4, 45.6));
+    const ang = -Math.PI / 2 + sweep * 2 * Math.PI;
+    const { cx, cy, r } = RING;
+    ringDot.setAttribute('cx', cx + r * Math.cos(ang)); ringDot.setAttribute('cy', cy + r * Math.sin(ang));
+    const tail = Math.max(-Math.PI / 2, ang - 1.4);
+    const large = ang - tail > Math.PI ? 1 : 0;
+    ringArc.setAttribute('d', `M${cx + r * Math.cos(tail)},${cy + r * Math.sin(tail)} A${r},${r} 0 ${large} 1 ${cx + r * Math.cos(ang)},${cy + r * Math.sin(ang)}`);
+    $('#ring').style.opacity = w;
+    ['lN', 'lE', 'lS', 'lW'].forEach((id, i) => {
+      const el = $('#' + id);
+      focus(el, Math.min(w, eo(seg(t, 41.3 + i * 0.15, 41.9 + i * 0.15))));
+      const lit = (sweep * 4 - i + 4) % 4 < 0.9 && sweep * 4 >= i;
+      el.style.color = lit ? C.sodium : (sweep * 4 >= i ? C.tungsten : C.steel);
+    });
+    focus($('#s7 .caption p'), win(t, 41.8, 45.9, 0.8, 0.6));
+  },
+  s8(t) {
+    const w = win(t, 46, 51, 0.4, 0.6);
+    type($('#cmd8'), 'claude --agent harness-builder:harness-orchestrator', t, 46.2, 44);
+    cursor($('#cur8'), t, 46.0, 51);
+    $('#s8 .term').style.opacity = w;
+    const p = seg(t, 47.4, 49.8);
+    $('#track').style.opacity = w;
+    Object.assign($('#trackOn').style, { left: STAGE_X[0] + 'px', width: (STAGE_X[4] - STAGE_X[0]) * eio(p) + 'px', opacity: w });
+    $$('.stage').forEach((el, i) => {
+      focus(el, Math.min(w, eo(seg(t, 46.9 + i * 0.1, 47.4 + i * 0.1))));
+      const on = eio(p) * 4 >= i - 0.001;
+      const dot = $('.dot', el);
+      dot.style.borderColor = on ? C.sodium : C.steel;
+      dot.style.background = on ? C.sodium : 'transparent';
+      $('.t', el).style.color = on ? C.tungsten : C.steel;
+    });
+    focus($('#s8 .caption p'), win(t, 47.0, 50.9, 0.8, 0.6));
+  },
+  s9(t) {
+    focus($('#end1'), win(t, 51.6, 53.9, 1.0, 0.6));
+    const e2 = win(t, 54.2, 58, 0.5, 0.9);
+    const el = $('#end2');
+    el.style.display = t >= 54.2 ? 'flex' : 'none';
+    el.style.opacity = e2;
+    focus($('#endTitle'), Math.min(e2, eo(seg(t, 54.2, 54.7))));
+    $$('#end2 > :not(#endTitle)').forEach((c, i) => focus(c, Math.min(e2, eo(seg(t, 54.9 + i * 0.25, 55.6 + i * 0.25)))));
+  },
+};
+
+const RAIL = { s4: 0, s5: 1, s6: 2, s7: 3, s8: 4 };
+const railSpans = $$('#rail .items span');
+function rail(t) {
+  const on = t >= 18 && t < 51;
+  const r = $('#rail');
+  r.style.display = on ? 'block' : 'none';
+  if (!on) return;
+  r.style.opacity = Math.min(eo(seg(t, 18, 18.8)), 1 - seg(t, 50.4, 51));
+  const pos = [0, 1, 2, 3, 4].map((i) => ({ x: railSpans[i].offsetLeft, w: railSpans[i].offsetWidth }));
+  let idx = 0, f = 0;
+  for (const id in RAIL) {
+    const [a] = TL.scenes[id];
+    if (t >= a) { idx = RAIL[id]; f = eio(seg(t, a, a + 0.7)); }
+  }
+  const from = pos[Math.max(0, idx - 1)], to = pos[idx];
+  const u = $('#rail .under');
+  u.style.left = from.x + (to.x - from.x) * f + 'px';
+  u.style.width = from.w + (to.w - from.w) * f + 'px';
+  railSpans.forEach((s, i) => { s.style.color = i === idx ? C.sodium : i < idx ? C.tungsten : C.steel; });
+}
+
+window.renderFrame = function (t) {
+  const lb = TL.letterbox;
+  const h = lb.height * (1 - eio(seg(t, lb.open[0], lb.open[1])) + eio(seg(t, lb.close[0], lb.close[1])));
+  $('#barT').style.height = $('#barB').style.height = h.toFixed(2) + 'px';
+  for (const id in R) if (sceneOn(id, t)) R[id](t);
+  rail(t);
+  grain(Math.round(t * TL.fps));
+  return new Promise((res) => requestAnimationFrame(() => requestAnimationFrame(res)));
+};
+// Scenes start hidden, so nothing requests the web fonts until asked.
+window.ready = Promise.all(['300 68px Archivo', '800 120px Archivo', '400 30px "JetBrains Mono"', '600 30px "JetBrains Mono"']
+  .map((f) => document.fonts.load(f))).then(() => document.fonts.ready).then(() => TL.duration);
+</script>
+</body>
+</html>
