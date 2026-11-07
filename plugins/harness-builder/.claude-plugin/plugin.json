@@ -5,5 +5,7 @@
   "description": "Build or improve a Claude Code harness (skills, agents, hooks, CLAUDE.md) the way Anthropic recommends, and prove it beats Claude with no harness.\n- Orchestrator agent: research, design, build, eval, optimize. You approve every eval run and every change.\n- 6 skills: harness, research, design, audit, eval, optimize\n- hb script: audit an existing harness, estimate eval cost, track experiments, wrap a .claude folder for evals\nNeeds Node.js and Claude Code 2.1.269+.",
   "author": {
     "name": "mhmdsalameh"
-  }
+  },
+  "repository": "https://github.com/mhmdsalameh/ai-native-harness",
+  "license": "MIT"
 }

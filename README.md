@@ -211,3 +211,7 @@ To release, raise `version` in `plugins/harness-builder/.claude-plugin/plugin.js
 
 Issues and pull requests are welcome. A change to a skill or agent should come with an eval case
 that shows the difference.
+
+## License
+
+[MIT](LICENSE)
