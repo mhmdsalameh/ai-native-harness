@@ -28,6 +28,7 @@
 - tried: media/promo — time-driven HTML stage rendered frame by frame over CDP (Node 22 WebSocket, no deps), synthesized score (audio.cjs), ffmpeg mux
 - passed: out/harness-builder.mp4 1920x1080 30 fps H.264 + AAC 48 kHz, 58.0 s, 129 MB, -16.7 LUFS; render ~3.5 min; boundary stills t=0/12.15/57.99 grain-only black
 - failed: first stills run — hidden scenes never requested the web fonts; fixed with explicit document.fonts.load
+- then: added scene sd (51–71 s) — "Give it a domain." + example plans for development, design, motion graphics (labeled "Example plans", no scores); end card and rail now timed from timeline.js; film 78.0 s, 177 MB, -16.9 LUFS, render ~4.5 min
 - next: user reviews the film; push the repo before posting (end card shows github.com/mhmdsalameh/ai-native-harness); optional 1:1 cut for LinkedIn
 
 ### 2026-11-07

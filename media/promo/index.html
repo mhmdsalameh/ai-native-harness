@@ -91,8 +91,21 @@
   #track { position: absolute; top: 528px; height: 2px; background: var(--rule); }
   #trackOn { position: absolute; top: 528px; height: 2px; background: var(--sodium); }
 
+  /* sd: example domains */
+  .dom { position: absolute; inset: 0; display: none; }
+  .dom h3 { position: absolute; left: 160px; top: 200px; margin: 0; font-size: 76px; font-weight: 600; font-stretch: 112%; }
+  .dom .ask { position: absolute; left: 160px; top: 334px; font-size: 30px; white-space: pre; }
+  .dom .ask .p { color: var(--steel); }
+  .dom .stg { position: absolute; left: 160px; top: 414px; display: flex; gap: 44px; font-size: 24px; font-stretch: 105%; }
+  .dom .col { position: absolute; top: 540px; width: 540px; }
+  .dom .col h4 { margin: 0 0 34px; font-size: 24px; font-weight: 500; color: var(--steel); font-stretch: 105%; }
+  .dom .col p { font-size: 30px; line-height: 1; margin: 0 0 34px; white-space: nowrap; }
+  .dom .col.hard p { color: var(--sodium); }
+  .dom .col .tag { color: var(--steel); }
+  #sdFoot { position: absolute; left: 160px; bottom: 110px; font-size: 26px; color: var(--steel); }
+
   /* s9 */
-  #s9 .big { font-size: 96px; font-weight: 600; font-stretch: 112%; }
+  .big { font-size: 96px; font-weight: 600; font-stretch: 112%; }
   #endTitle { font-size: 84px; font-weight: 800; font-stretch: 125%; letter-spacing: .14em; white-space: nowrap; }
   #s9 .os { font-size: 32px; color: var(--steel); margin-top: 22px; font-stretch: 105%; }
   #s9 .inst { margin-top: 56px; font-size: 26px; line-height: 1.8; text-align: left; white-space: pre; }
@@ -168,6 +181,12 @@
   <div id="track"></div><div id="trackOn"></div>
   <div id="stages"></div>
   <div class="caption"><p>Already have a harness? Point it there. Audit, baseline, improve.</p></div>
+</section>
+
+<section class="scene" id="sd">
+  <div class="center" id="sdIntro"><p class="big">Give it a domain.</p></div>
+  <div id="doms"></div>
+  <p id="sdFoot">Example plans. The real output depends on your sources and your evals.</p>
 </section>
 
 <section class="scene" id="s9">
@@ -297,6 +316,48 @@ STAGES.forEach((s, i) => {
 });
 Object.assign($('#track').style, { left: STAGE_X[0] + 'px', width: STAGE_X[4] - STAGE_X[0] + 'px' });
 
+// Example plans: what a new-mode run proposes for each domain. Illustrative, not measured.
+const NEW_MODE = ['Research', 'Design', 'Build', 'Write evals', 'Wrap as plugin', 'Baseline', 'Optimize'];
+const DOMAINS = [
+  { title: 'For development', ask: 'build a harness for our TypeScript web app',
+    skills: ['api-conventions', 'testing-patterns', 'release-checklist'],
+    hooks: ['Block edits to .env files', 'Typecheck after every edit', 'Block force pushes to main'],
+    evals: ['add-endpoint-with-tests', 'fix-a-failing-test', 'unrelated-question'] },
+  { title: 'For design', ask: 'build a harness for product design work',
+    skills: ['design-tokens', 'screen-layout', 'accessibility-review'],
+    hooks: ['Block raw hex colors outside tokens', 'Block fonts outside the type scale', 'Flag text below 4.5:1 contrast'],
+    evals: ['build-a-settings-screen', 'fix-a-contrast-issue', 'unrelated-question'] },
+  { title: 'For motion graphics', ask: 'build a harness for motion graphics in code',
+    skills: ['easing-curves', 'script-to-timeline', 'render-pipeline'],
+    hooks: ['Block a full render before a stills pass', 'Block unseeded randomness in frames', 'Pin frame rate and size on export'],
+    evals: ['storyboard-to-timeline', 'smooth-a-jerky-move', 'unrelated-question'] },
+];
+DOMAINS.forEach((d) => {
+  const el = document.createElement('div');
+  el.className = 'dom';
+  el.innerHTML = `<h3></h3><div class="ask mono"><span class="p">&gt; </span><span class="cmd"></span><span class="cur"></span></div>
+    <div class="stg"></div>
+    <div class="col" style="left:160px"><h4>Skills it writes</h4></div>
+    <div class="col hard" style="left:720px"><h4>Hooks it enforces</h4></div>
+    <div class="col" style="left:1300px"><h4>Evals it runs</h4></div>`;
+  $('h3', el).textContent = d.title;
+  d.stg = NEW_MODE.map((s) => { const sp = document.createElement('span'); sp.textContent = s; $('.stg', el).appendChild(sp); return sp; });
+  const cols = $$('.col', el);
+  d.cols = [d.skills, d.hooks, d.evals].map((items, ci) => ({
+    h: $('h4', cols[ci]),
+    items: items.map((text, ri) => {
+      const p = document.createElement('p');
+      if (ci !== 1) p.className = 'mono';
+      p.textContent = text;
+      if (ci === 2 && ri === items.length - 1) { const tg = document.createElement('span'); tg.className = 'tag'; tg.textContent = '  control'; p.appendChild(tg); }
+      cols[ci].appendChild(p);
+      return p;
+    }),
+  }));
+  Object.assign(d, { el, h: $('h3', el), askEl: $('.ask', el), cmd: $('.cmd', el), cur: $('.cur', el) });
+  $('#doms').appendChild(el);
+});
+
 const RING = { cx: 960, cy: 470, r: 220 };
 {
   const s = $('#ring');
@@ -410,7 +471,7 @@ const R = {
       bp.style.width = BARW * r.p * pp + 'px';
       bw.style.opacity = bp.style.opacity = w;
       const delta = r.p - r.w;
-      const da = i === 0 ? 35.0 : 34.4 + i * 0.12;
+      const da = i === 0 ? TL.hits[1].t : 34.4 + i * 0.12;
       const d = $('.d', el);
       const dp = eo(seg(t, da, da + 0.5));
       d.textContent = (delta > 0 ? '+' : '') + (delta * Math.min(1, dp * 1.4)).toFixed(2);
@@ -460,25 +521,56 @@ const R = {
     });
     focus($('#s8 .caption p'), win(t, 47.0, 50.9, 0.8, 0.6));
   },
+  sd(t) {
+    const [a, b] = TL.scenes.sd;
+    const first = TL.domains[0][0];
+    focus($('#sdIntro'), win(t, a + 0.2, first, 0.8, 0.5));
+    focus($('#sdFoot'), win(t, first + 1.5, b, 0.8, 0.6));
+    DOMAINS.forEach((d, i) => {
+      const [da, db] = TL.domains[i];
+      const on = t >= da && t < db;
+      d.el.style.display = on ? 'block' : 'none';
+      if (!on) return;
+      const w = win(t, da, db, 0.3, 0.4);
+      focus(d.h, Math.min(w, eo(seg(t, da, da + 0.5))));
+      const cps = 55;
+      type(d.cmd, d.ask, t, da + 0.4, cps);
+      cursor(d.cur, t, da + 0.3, da + 0.4 + d.ask.length / cps + 0.5);
+      d.askEl.style.opacity = w;
+      const n = seg(t, da + 1.3, da + 3.0) * d.stg.length;
+      d.stg.forEach((s, k) => {
+        s.style.color = k < Math.floor(n) ? C.tungsten : k === Math.floor(n) ? C.sodium : C.steel;
+        s.style.opacity = w;
+      });
+      d.cols.forEach((c, ci) => {
+        focus(c.h, Math.min(w, eo(seg(t, da + 1.5 + ci * 0.2, da + 2.0 + ci * 0.2))));
+        c.items.forEach((it, ri) => { const s0 = da + 1.8 + ci * 0.35 + ri * 0.18; focus(it, Math.min(w, eo(seg(t, s0, s0 + 0.5)))); });
+      });
+    });
+  },
   s9(t) {
-    focus($('#end1'), win(t, 51.6, 53.9, 1.0, 0.6));
-    const e2 = win(t, 54.2, 58, 0.5, 0.9);
+    const [a, b] = TL.scenes.s9;
+    focus($('#end1'), win(t, a + 0.6, a + 2.9, 1.0, 0.6));
+    const e2a = a + 3.2;
+    const e2 = win(t, e2a, b, 0.5, 0.9);
     const el = $('#end2');
-    el.style.display = t >= 54.2 ? 'flex' : 'none';
+    el.style.display = t >= e2a ? 'flex' : 'none';
     el.style.opacity = e2;
-    focus($('#endTitle'), Math.min(e2, eo(seg(t, 54.2, 54.7))));
-    $$('#end2 > :not(#endTitle)').forEach((c, i) => focus(c, Math.min(e2, eo(seg(t, 54.9 + i * 0.25, 55.6 + i * 0.25)))));
+    focus($('#endTitle'), Math.min(e2, eo(seg(t, e2a, e2a + 0.5))));
+    $$('#end2 > :not(#endTitle)').forEach((c, i) => focus(c, Math.min(e2, eo(seg(t, e2a + 0.7 + i * 0.25, e2a + 1.4 + i * 0.25)))));
   },
 };
 
 const RAIL = { s4: 0, s5: 1, s6: 2, s7: 3, s8: 4 };
 const railSpans = $$('#rail .items span');
 function rail(t) {
-  const on = t >= 18 && t < 51;
+  const ids = Object.keys(RAIL);
+  const ra = TL.scenes[ids[0]][0], rb = TL.scenes[ids[ids.length - 1]][1];
+  const on = t >= ra && t < rb;
   const r = $('#rail');
   r.style.display = on ? 'block' : 'none';
   if (!on) return;
-  r.style.opacity = Math.min(eo(seg(t, 18, 18.8)), 1 - seg(t, 50.4, 51));
+  r.style.opacity = Math.min(eo(seg(t, ra, ra + 0.8)), 1 - seg(t, rb - 0.6, rb));
   const pos = [0, 1, 2, 3, 4].map((i) => ({ x: railSpans[i].offsetLeft, w: railSpans[i].offsetWidth }));
   let idx = 0, f = 0;
   for (const id in RAIL) {

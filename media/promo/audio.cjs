@@ -20,9 +20,10 @@ for (let i = 0; i < N; i++) {
   const [s0, s1] = TL.silence;
   const gate = t >= s0 && t < s1 ? 0 : t >= s1 ? seg(t, s1, s1 + 0.05) : 1;
   const env = seg(t, 0, 4) * (1 - seg(t, TL.duration - 2, TL.duration)) * gate;
-  const press = 1 + 0.35 * seg(t, 31, 34.9) * (1 - seg(t, 35, 36));
+  const reveal = TL.hits[1].t;
+  const press = 1 + 0.35 * seg(t, reveal - 4, reveal - 0.1) * (1 - seg(t, reveal, reveal + 1));
   const lfo = 0.75 + 0.25 * Math.sin(TAU * 0.11 * t);
-  const lift = seg(t, 12.3, 16) * 0.02 * Math.sin(TAU * 123.47 * t + 0.7);
+  const lift = seg(t, s1, s1 + 3.7) * 0.02 * Math.sin(TAU * 123.47 * t + 0.7);
   for (const [ch, off] of [[L, 0], [R, 0.35]]) {
     ch[i] += env * press * (lfo * (0.10 * Math.sin(TAU * 41.2 * t + off) + 0.05 * Math.sin(TAU * 61.74 * t + 0.3 + off)
       + 0.045 * Math.sin(TAU * 82.41 * t + 1 + off)) + 0.016 * Math.sin(TAU * 164.81 * t + 2 + off) * (0.5 + 0.5 * Math.sin(TAU * 0.07 * t)) + lift);
