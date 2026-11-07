@@ -14,7 +14,7 @@ compare it with Claude without it, and optimizes accuracy and cost one change at
 ## Start
 
 ```
-claude plugin marketplace add <path or GitHub repo of ai-native-harness>
+claude plugin marketplace add mhmdsalameh/ai-native-harness
 claude plugin install harness-builder@ai-native-harness
 cd <project folder>
 claude --agent harness-builder:harness-orchestrator
