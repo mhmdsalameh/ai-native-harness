@@ -1,0 +1,31 @@
+# STATE.md — ai-native-harness
+
+## Verified facts
+- [2026-11-07] `claude plugin eval` (Claude Code 2.1.319) runs each case with and without the plugin; `--runs 1` still reports `cases[].runsPerCase: 3` — count `arms.with` for runs made — verified by: probe run, scripts/test/fixtures/aggregate-probe.json
+- [2026-11-07] Eval traces are deleted after a run unless `--keep-temp`; kept temp dirs on Windows cannot be sealed and the CLI says to delete them — verified by: probe and self-proof runs
+- [2026-11-07] `append_system_prompt` written by `hb variant` as a `|` block scalar loads and takes effect — verified by: ZEBRA variant run, $0.05
+- [2026-11-07] The eval loader ends grader frontmatter at a `---` inside a quoted pattern ("invalid YAML frontmatter: Unexpected EOF"); use `-{3}` — verified by: self-proof run 1 failed to load fix-skill-trigger, fixed run loaded
+- [2026-11-07] No WSL on this machine; eval runs cannot grant Bash/PowerShell on native Windows (docs: no sandbox backend) — verified by: `wsl.exe -l -v`, plugin-evals doc
+- [2026-11-07] Plugin PreToolUse hook `permissionDecision: ask` stops a `claude plugin eval` call in `claude -p` and returns the reason to the model; `deny` returns the reason as a hook error — verified by: live `claude -p --plugin-dir` runs in a scratch folder with .harness/harness.json
+- [2026-11-07] Orchestrator as main agent loads `harness-builder:harness` and runs `hb status` on its own — verified by: `claude -p --plugin-dir ... --agent harness-builder:harness-orchestrator`
+- [2026-11-07] `~/.claude` hooks use `$USERPROFILE\.claude\...`; hb wrap rewrites it to `${CLAUDE_PLUGIN_ROOT}` — verified by: `hb wrap ~/.claude <scratch>` + `claude plugin validate`
+
+## Rules
+- Process for this build: compressed SDLC (intent+spec, then plan), chosen by the user 2026-11-07.
+- Eval runs: no fixed budget; each run shows an estimate and needs approval (hook `ask`) with `--max-cost-usd`. (user, 2026-11-07)
+- Scripts use Node built-ins only.
+
+## Open failures
+- [2026-11-07] Self-proof measured at `--runs 1` only; Δ per case is one run each | confirm at `--runs 3` (estimate $1.6–6.3) before claiming stable results
+- [2026-11-07] place-controls case shows Δ 0 (plain Claude already places these controls correctly) | hypothesis: it is a control, not a capability case; replace with a harder placement case from a real failure
+- [2026-11-07] Not yet used end to end on a real target (improve mode on ~/.claude or a project) | repro: `claude --agent harness-builder:harness-orchestrator` in a project folder
+
+## Lessons learned
+- Grade produced files or the final message, never the trace, when the loaded skill text contains the same words the grader looks for.
+
+## Last session
+### 2026-11-07
+- tried: research (20 articles, 21 cookbook entries, plugin-eval docs) -> intent/spec + plan -> plugin harness-builder (3 agents, 6 skills, hb CLI, eval-guard hook, 5-case self-proof suite)
+- passed: 33/33 `node --test scripts/test/*.test.cjs`; `claude plugin validate` plugin + marketplace; self-proof runs=1: eval-suite-for-skill Δ +1.00, audit-plugin Δ +0.20, place-controls 0.00, fix-skill-trigger 0.00 (control), unrelated-git-question 0.00 with no skill fired; suite mean Δ +0.24; eval spend $1.25 + probes ~$0.15
+- failed: first self-proof run could not load fix-skill-trigger (`---` in a grader pattern) — fixed
+- next: user tries improve mode on a real harness; runs=3 confirmation; LICENSE + icon if the plugin goes to the directory

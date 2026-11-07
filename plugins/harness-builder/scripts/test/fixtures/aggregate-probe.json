@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "claudeVersion": "2.1.319",
+  "startedAt": "2026-11-07T16:26:42.380Z",
+  "durationSeconds": 8,
+  "costUsd": 0.09418660000000001,
+  "partial": false,
+  "suite": {
+    "root": "C:\\Users\\Pc\\AppData\\Local\\Temp\\claude\\7fd359f8dfd04b2d\\94c74a13-468c-49b1-a968-a8c4f76d1e3e\\scratchpad\\fmt-probe",
+    "ablation": "with-without",
+    "threshold": 1,
+    "concurrency": 1,
+    "plugins": [
+      {
+        "name": "fmt-probe",
+        "version": "0.0.1",
+        "path": "C:\\Users\\Pc\\AppData\\Local\\Temp\\claude\\7fd359f8dfd04b2d\\94c74a13-468c-49b1-a968-a8c4f76d1e3e\\scratchpad\\fmt-probe"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "note-case",
+      "dir": "evals\\note-case",
+      "source": "prose",
+      "promptMarkdown": "Give me a release note line for this change: the login page now remembers the last username.",
+      "runsPerCase": 3,
+      "timeoutSeconds": 300,
+      "maxTurns": 4,
+      "graders": [
+        {
+          "name": "format",
+          "type": "regex",
+          "weight": 1,
+          "config": {
+            "target": "last_message",
+            "pattern": "^RN: ",
+            "flags": "m",
+            "match": "contains"
+          }
+        },
+        {
+          "name": "skill-fired",
+          "type": "tool_used",
+          "weight": 1,
+          "config": {
+            "tool": "Skill",
+            "input_match": "\"skill\"\\s*:\\s*\"(?:[\\w-]+:)?release-note\""
+          }
+        }
+      ],
+      "arms": {
+        "with": [
+          {
+            "score": 1,
+            "passed": true,
+            "turns": 3,
+            "costUsd": 0.0502546,
+            "judgeCostUsd": 0,
+            "durationSeconds": 5,
+            "startedAt": "2026-11-07T16:26:42.487Z",
+            "error": null,
+            "tracePath": "C:\\Users\\Pc\\AppData\\Local\\Temp\\claude-eval-q7wrq4\\out\\trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "format",
+                "passed": true,
+                "weight": 1,
+                "explanation": "matched ^RN: ",
+                "withOnly": false,
+                "scored": true
+              },
+              {
+                "name": "skill-fired",
+                "passed": true,
+                "weight": 1,
+                "explanation": "Skill called 1x (expected 1..∞)",
+                "withOnly": true,
+                "scored": false
+              }
+            ]
+          }
+        ],
+        "without": [
+          {
+            "score": 0,
+            "passed": false,
+            "turns": 1,
+            "costUsd": 0.043932,
+            "judgeCostUsd": 0,
+            "durationSeconds": 2,
+            "startedAt": "2026-11-07T16:26:47.691Z",
+            "error": null,
+            "tracePath": "C:\\Users\\Pc\\AppData\\Local\\Temp\\claude-eval-hJrp2n\\out\\trace.jsonl",
+            "skippedPaidGraders": false,
+            "graders": [
+              {
+                "name": "format",
+                "passed": false,
+                "weight": 1,
+                "explanation": "pattern not found in last_message",
+                "withOnly": false,
+                "scored": true
+              }
+            ]
+          }
+        ]
+      },
+      "aggregates": {
+        "score": 1,
+        "passRate": 1,
+        "scoreWithout": 0,
+        "passRateWithout": 0,
+        "delta": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 1,
+    "casesPassed": 1,
+    "overallScore": 1,
+    "overallPassRate": 1,
+    "meanDelta": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ai-native-harness",
+  "description": "Harness Builder: an agent that researches, builds, evaluates and optimizes Claude Code harnesses, new or existing.",
+  "owner": {
+    "name": "mhmdsalameh"
+  },
+  "plugins": [
+    {
+      "name": "harness-builder",
+      "description": "Build or improve a Claude Code harness (skills, agents, hooks, CLAUDE.md) the way Anthropic recommends, and prove it beats Claude with no harness.\n- Orchestrator agent: research, design, build, eval, optimize. You approve every eval run and every change.\n- 6 skills: harness, research, design, audit, eval, optimize\n- hb script: audit an existing harness, estimate eval cost, track experiments, wrap a .claude folder for evals\nNeeds Node.js and Claude Code 2.1.269+.",
+      "author": {
+        "name": "mhmdsalameh"
+      },
+      "category": "development",
+      "version": "0.1.0",
+      "source": "./plugins/harness-builder"
+    }
+  ]
+}
