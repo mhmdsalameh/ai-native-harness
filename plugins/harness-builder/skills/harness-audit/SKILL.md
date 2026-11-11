@@ -39,6 +39,7 @@ The script cannot judge meaning. Read the always-loaded files and every descript
 | Stale workaround | rules aimed at old model failures: repeated warnings, ALL CAPS, "IMPORTANT" stacking, forced resets | remove, then confirm with an eval |
 | Weak trigger | description says what but not when; jargon the user never types; two skills whose descriptions overlap | rewrite in the user's words; merge |
 | Subagent sprawl | many agents split by job title; agents that just hand work to each other | fold into one agent + skills |
+| No orchestrator | no agent written to run as the main session (`claude --agent`) that loads the entry skill and holds the gates | add `<harness>-orchestrator` from the harness-design template |
 | Missing determinism | the model is told to count, parse, format or check something a script could do | script |
 | No proof | no eval suite, or a suite with only should-fire cases | write the suite (harness-eval) |
 

@@ -8,6 +8,8 @@
 - [2026-11-07] No WSL on this machine; eval runs cannot grant Bash/PowerShell on native Windows (docs: no sandbox backend) — verified by: `wsl.exe -l -v`, plugin-evals doc
 - [2026-11-07] Plugin PreToolUse hook `permissionDecision: ask` stops a `claude plugin eval` call in `claude -p` and returns the reason to the model; `deny` returns the reason as a hook error — verified by: live `claude -p --plugin-dir` runs in a scratch folder with .harness/harness.json
 - [2026-11-07] Orchestrator as main agent loads `harness-builder:harness` and runs `hb status` on its own — verified by: `claude -p --plugin-dir ... --agent harness-builder:harness-orchestrator`
+- [2026-11-11] A project agent `.claude/agents/<name>.md` runs as the main session with `claude --agent <name>` (2.1.322) — verified by: `claude -p --agent demo-orchestrator` in a scratch folder replied with the agent's fixed text
+- [2026-11-11] Agent locations and priority: project `.claude/agents/` > user `~/.claude/agents/` > plugin `agents/`; plugin agents start by bare or scoped name (`<plugin>:<name>`); `"agent"` in `.claude/settings.json` sets the default, `--agent` overrides; omitted `tools` = all tools; an agent body replaces the default system prompt — verified by: code.claude.com/docs/en/sub-agents (user-level location not live-checked)
 - [2026-11-07] `~/.claude` hooks use `$USERPROFILE\.claude\...`; hb wrap rewrites it to `${CLAUDE_PLUGIN_ROOT}` — verified by: `hb wrap ~/.claude <scratch>` + `claude plugin validate`
 
 ## Rules
@@ -24,6 +26,13 @@
 - Grade produced files or the final message, never the trace, when the loaded skill text contains the same words the grader looks for.
 
 ## Last session
+### 2026-11-11 (orchestrator per harness)
+- tried: user asked that every built harness gets its own orchestrator for `claude --agent`; scope chosen: design + templates + audit, no eval case
+- changed: harness-design SKILL.md (default, design.md row 1, build step 4, launch check), templates.md (orchestrator template + launch table), harness-audit (No orchestrator class), harness SKILL.md stage table, README; branch feat/orchestrator-per-harness, not committed
+- passed: `claude plugin validate` exit 0 (icon warning only); `hb inventory` ~837 tokens, no errors; 33/33 unit tests
+- failed: none
+- next: effect not measured (user chose no eval case); commit after user review
+
 ### 2026-11-07 (promo film)
 - tried: media/promo — time-driven HTML stage rendered frame by frame over CDP (Node 22 WebSocket, no deps), synthesized score (audio.cjs), ffmpeg mux
 - passed: out/harness-builder.mp4 1920x1080 30 fps H.264 + AAC 48 kHz, 58.0 s, 129 MB, -16.7 LUFS; render ~3.5 min; boundary stills t=0/12.15/57.99 grain-only black

@@ -22,7 +22,7 @@ with no harness, at the lowest token cost. Every claim of "better" comes from an
 |---|---|---|---|---|
 | new | research | harness-research | `.harness/research/findings.md` | approve the question list and sources first |
 | new | design | harness-design | `.harness/design.md` | approve the design before building |
-| new | build | harness-design | the harness files | — |
+| new | build | harness-design | the harness files, with a `<harness>-orchestrator` agent for `claude --agent` | — |
 | improve | audit | harness-audit | `.harness/audit.md` | approve which findings to act on |
 | both | eval-suite | harness-eval | eval cases | approve the case list |
 | both | wrap (non-plugin targets) | harness-eval | `.harness/wrapped/` | — |

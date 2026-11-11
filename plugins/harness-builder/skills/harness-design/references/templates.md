@@ -73,8 +73,41 @@ You are <role>. Your output is <format, length limit, file path if any>.
 <Scope: what to do and what not to do. Stop rule: when to stop.>
 ```
 
-Main-session agent (started with `claude --agent <plugin>:<agent>` or a project `"agent"` setting):
-first line of the body tells it to load its entry skill with the Skill tool.
+## Orchestrator (main-session agent; every harness has one)
+
+```markdown
+---
+name: <harness>-orchestrator
+description: <Harness> operator. Runs as the main session agent (claude --agent <launch name>) and <what it does, for whom>. Stops for the user at <gates>.
+model: inherit
+---
+
+You <role>. You succeed when <observable outcome>.
+
+First action of every session: load the `<entry skill>` skill with the Skill tool<, then run
+`<status command>`>. Load each <stage or task> skill with the Skill tool before doing it.
+
+How you work:
+
+- Do the work yourself. Use `<subagent>` only for <context isolation or parallel work>.
+- Stop and ask with AskUserQuestion at: <each gate>. Give 2–4 options, recommendation first.
+- <Each hard rule a hook enforces, so the agent expects the block and does not retry.>
+- Never report <done, passing, better> without a command you ran.
+
+Report to the user in <style and length>.
+```
+
+Omit `tools` so the orchestrator keeps every tool. Its body replaces the default Claude Code system
+prompt, so it states the role, the first action and the gates in full.
+
+| Target | File | Launch command |
+|---|---|---|
+| plugin | `<plugin>/agents/<name>.md` | `claude --agent <plugin>:<name>` |
+| project | `.claude/agents/<name>.md` | `claude --agent <name>` in the project folder |
+| user (`~/.claude`) | `~/.claude/agents/<name>.md` | `claude --agent <name>` |
+
+Default for a folder: `{ "agent": "<launch name>" }` in its `.claude/settings.json`; `--agent`
+overrides it. A project agent overrides a user agent of the same name, which overrides a plugin agent.
 
 ## Hook (PreToolUse guard)
 

@@ -26,8 +26,10 @@ table with load timing and cost: [references/placement.md](references/placement.
 
 Defaults that hold until an eval says otherwise:
 
-- **One agent with skills.** Add a subagent only for context isolation or parallel independent
-  work. Split by context, never by org chart. Keep the roster to a handful.
+- **One orchestrator with skills.** Every harness gets one main-session agent,
+  `<harness>-orchestrator`, that the user starts with `claude --agent`. It loads the entry skill and
+  holds the gates; the skills hold the procedures. Add a subagent only for context isolation or
+  parallel independent work. Split by context, never by org chart. Keep the roster to a handful.
 - **Description is the trigger.** Say what the skill does *and* when to use it, in the user's words.
   Under 1,536 characters (description + `when_to_use`); the listing truncates beyond that.
 - **Progressive disclosure.** SKILL.md holds the procedure; long references, examples and schemas go
@@ -45,6 +47,7 @@ Defaults that hold until an eval says otherwise:
 | # | Requirement (source) | Mechanism | File | Always-loaded cost | How an eval will check it |
 |---|---|---|---|---|---|
 
+Row 1 is always the orchestrator: its file, its launch command, and the gates it stops at.
 Estimate always-loaded cost as characters / 4 for CLAUDE.md lines and descriptions. Each row must
 name the eval check that will show it works; a control nobody can check is a candidate to drop.
 Ask the user to approve the design.
@@ -57,7 +60,9 @@ agent, hook (with its script), CLAUDE.md skeleton. Build order:
 1. Manifest and folder layout; `claude plugin validate <plugin>` passes.
 2. Hooks and scripts first (they are the guarantees), each with a test you ran.
 3. Skills, one at a time; after each, run `hb inventory <target>` and fix every error and warning.
-4. Agents last, only those design.md justifies.
+4. The orchestrator from the template: `agents/<harness>-orchestrator.md` in a plugin,
+   `.claude/agents/` in a project, `~/.claude/agents/` for a user harness. Then other agents, only
+   those design.md justifies.
 5. CLAUDE.md last and short: what is left after everything else found a better home.
 
 Check before moving to evals:
@@ -65,6 +70,10 @@ Check before moving to evals:
 - `claude plugin validate <plugin>` exit 0 (plugins), and `hb inventory` shows no errors.
 - Every script has run once on real input. Every hook has been triggered once (a live
   `claude -p` call that the hook must decide on).
+- The orchestrator starts: `claude -p --agent <launch name> "<a first task>"` (add
+  `--plugin-dir <plugin>` for an uninstalled plugin) loads the entry skill and does its first step.
+  Give the user the launch command, and offer `{ "agent": "<launch name>" }` in the target folder's
+  `.claude/settings.json` to make it the default there.
 - Plugin agents ignore `hooks`, `mcpServers`, `permissionMode`: put hooks in `hooks/hooks.json`.
 - `skills:` frontmatter does not put skill text in a main-session agent's context; tell the agent in
   its body to load the skill with the Skill tool.

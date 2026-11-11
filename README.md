@@ -117,6 +117,10 @@ It proposes research questions and sources, then a design with one row per contr
 it belongs in. After your approval it builds the files, proposes eval cases, shows a cost estimate
 and runs the baseline eval.
 
+Every harness it builds gets its own orchestrator agent, so you start sessions with it the same way:
+`claude --agent <plugin>:<harness>-orchestrator` for a plugin, `claude --agent <harness>-orchestrator`
+for a project or `~/.claude` harness.
+
 ### Example: improve your own setup
 
 ```
